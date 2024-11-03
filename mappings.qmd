@@ -1,0 +1,117 @@
+---
+title: "Test1"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+
+library(sf)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+my_data_dir <- rappdirs::user_data_dir(appauthor = "aganus", appname = "Mappingil15")
+if (!dir.exists(my_data_dir)) dir.create(my_data_dir, recursive = TRUE)
+tools::file_path_as_absolute(my_data_dir)
+```
+
+```{r}
+il_congdst_sf <- sf::st_read("congd/HB 1291 FA #1.shp")
+
+nrow(il_congdst_sf)
+head(il_congdst_sf)
+```
+
+```{r}
+ggplot(il_congdst_sf) +
+  geom_sf() +
+  labs(title = "Illinois Congressional Districts, 2021")
+```
+
+```{r}
+ill15 <- dplyr::filter(il_congdst_sf, DISTRICT == 15)
+ggplot(ill15) +
+  geom_sf() +
+  labs(title = "Illinois District 15")
+```
+
+```{r}
+il_prec_2022_sf <- sf::st_read("il_2022_gen_prec/il_2022_gen_cong_prec/il_2022_gen_cong_prec.shp")
+```
+
+```{r}
+nrow(il_prec_2022_sf)
+head(il_prec_2022_sf)
+```
+
+```{r}
+il15_prec <- dplyr::filter(il_prec_2022_sf, CONG_DIST == 14)
+head(il15_prec)
+```
+
+```{r}
+ill15_prec <- dplyr::filter(il_prec_2022_sf, CONG_DIST == 15)
+head(ill15_prec)
+```
+
+```{r}
+ill15_prec_sel <- ill15_prec %>% select(UNIQUE_ID,
+                                        COUNTYFP,
+                                        County,
+                                        CONG_DIST,
+                                        GCON15DLAN,
+                                        GCON15RMIL,
+                                        geometry)
+head(ill15_prec_sel)
+```
+
+```{r}
+ggplot(ill15_prec_sel) +
+  geom_sf() +
+  geom_sf(data = ill15, fill = NA, lwd = 1.2)
+  labs(title = "Precincts in Illinois Congressional District 15")
+```
+
+```{r}
+ill15_prec_win <- ill15_prec_sel %>% mutate(
+  Winner = case_when(
+    GCON15DLAN > GCON15RMIL ~ "D",
+    GCON15RMIL > GCON15DLAN ~ "R",
+    TRUE ~ "T"))
+
+head(ill15_prec_win)
+
+```
+
+```{r}
+ggplot(ill15_prec_win, aes(color = Winner)) +
+  geom_sf() + 
+  scale_color_manual(values = c("D" = "blue",
+                                "R" = "red",
+                                "T" = "green"))
+```
+
+```{r}
+ggplot(ill15_prec_win, aes(fill = Winner)) + 
+         geom_sf() +
+  scale_fill_manual(values = c("D" = "blue",
+                               "R" = "red",
+                               "T" = "green"))
+       
+```
+
+```{r}
+
+```
+
+\
